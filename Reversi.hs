@@ -52,26 +52,26 @@ getTargetRow board (row, col) (dx, dy) targetState =
 getValidMoves :: Board -> Tile -> [(Int, Int)]
 getValidMoves board (row, col) = 
     let      
-        candidates = [getTargetRow board (row, col) vector Blank | vector <- directions]
-        validityFunc :: [(Int, Int, TileState)] -> Bool
-        validityFunc tiles =
-            if length tiles < 3 then
-                False
-            else
-                let
-                    (x, xs) = tiles
-                    (r, c, state) = last xs
-                    mid = init xs
-                    (_, _, ts) = x
-                    target = flipTile ts
-                    midGood = all (\t -> t == target) mid
-
-                in
-                    midGood && (state == Blank)
-        validMoves = [(a, b) | candidate <- candidates, (a, b, _) <- (last candidate), validityFunc candidate == True]
+        candidates = [candidate | vector <- directions, candidate <- [getTargetRow board (row, col) vector Blank], length candidate >= 3]
+        validMoves = [(a, b) | candidate <- candidates, (a, b, _) <- [last candidate], validityFunc candidate == True]
+        --validMoves = [(a, b) | candidate <- candidates, (a, b, _) <- (last candidate), validityFunc candidate == True]
 
     in
         validMoves
+
+validityFunc :: [(Int, Int, TileState)] -> Bool
+validityFunc (_:_:[]) = False
+validityFunc tiles =
+        let
+            (x:xs) = tiles
+            (r, c, state) = last xs
+            mid = init xs
+            (_, _, ts) = x
+            target = flipTile ts
+            midGood = all (\(_, _, t) -> t == target) mid
+
+        in
+            midGood && (state == Blank)
 
 class Flippable t where
     flipTile :: t -> TileState
