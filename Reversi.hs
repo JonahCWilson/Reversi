@@ -18,6 +18,8 @@ startBoard = [
     [Blank, Blank, Blank, Blank, Blank, Blank, Blank, Blank]
     ]
 
+
+
 maxRow = 7
 maxCol = 7
 
@@ -27,10 +29,6 @@ minCol = 0
 getTile :: Board -> Int -> Int -> TileState
 getTile b row col = (b !! row) !! col
 
-test = [(a, b) | 
-    a <- [x + dx | x <- [1..10], dx <- [-1..1]],
-    b <- [x+dx | x <- [10..20], dx <- [-1..1]],
-    (a,b) /= (0,0)]
 
 outOfBounds :: (Int, Int) -> Bool
 outOfBounds (a,b) = a < minRow || b < minRow || a > maxCol || b > maxCol
@@ -54,10 +52,24 @@ getValidMoves board (row, col) =
     let      
         candidates = [candidate | vector <- directions, candidate <- [getTargetRow board (row, col) vector Blank], length candidate >= 3]
         validMoves = [(a, b) | candidate <- candidates, (a, b, _) <- [last candidate], validityFunc candidate == True]
-        --validMoves = [(a, b) | candidate <- candidates, (a, b, _) <- (last candidate), validityFunc candidate == True]
-
     in
         validMoves
+
+placeTile :: Board -> Tile -> TileState -> Board
+placeTile board (row, col) tile =
+    let
+        frontBoard = take row board
+        backBoard = drop (row+1) board
+
+        editRow = board !! row
+        prevRow = take col editRow
+        postRow = drop (col+1) editRow
+
+        final = [prevRow ++ [tile] ++  postRow]
+    in
+        frontBoard ++ final ++ backBoard 
+        
+
 
 validityFunc :: [(Int, Int, TileState)] -> Bool
 validityFunc (_:_:[]) = False
